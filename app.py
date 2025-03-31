@@ -305,7 +305,7 @@ elif page == "Example Images":
                                 
                                 with col2:
                                     st.markdown("### Tumor Detection")
-                                    st.image(detection_img, caption="Tumor Detection Result", use_column_width=True)
+                                    st.image(detection_img, caption="Tumor Detection Result", use_container_width=True, clamp=True)
                                 
                                 # GradCAM Visualization
                                 progress_bar.progress(85)
@@ -318,7 +318,7 @@ elif page == "Example Images":
                                 time.sleep(0.5)  # Simulate processing time
                                 
                                 st.subheader("GradCAM Visualization")
-                                st.image(gradcam_img, caption="GradCAM: Regions of Interest", use_column_width=True)
+                                st.image(gradcam_img, caption="GradCAM: Regions of Interest", use_container_width=True, clamp=True)
                                 
                                 # Diagnosis Report
                                 progress_bar.progress(95)
@@ -355,7 +355,7 @@ elif page == "Example Images":
                     modality_name = os.path.basename(img_path).split('_')[-1].split('.')[0]
                     with modality_cols[i]:
                         img = Image.open(img_path)
-                        st.image(img, caption=f"{modality_name} Modality", use_column_width=True)
+                        st.image(img, caption=f"{modality_name} Modality", use_container_width=True)
                         
                         # Add a button to analyze this modality image
                         if st.button(f"Analyze {modality_name}", key=f"analyze_mod_{img_path}"):
@@ -374,7 +374,7 @@ elif page == "Example Images":
                                 
                                 # Display detection result
                                 _, detection_img = detect_tumor(preprocessed_img, models['object_detector'])
-                                st.image(detection_img, caption=f"Tumor Detection on {modality_name}", use_column_width=True)
+                                st.image(detection_img, caption=f"Tumor Detection on {modality_name}", use_container_width=True, clamp=True)
                                 
                                 st.success(f"{modality_name} analysis completed!")
 

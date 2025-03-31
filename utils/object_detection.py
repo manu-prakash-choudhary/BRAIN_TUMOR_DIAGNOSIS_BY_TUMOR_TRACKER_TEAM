@@ -27,6 +27,10 @@ def detect_tumor(image, model, confidence_threshold=0.25):
         # Convert to 3 channels if needed
         input_image = np.repeat(np.expand_dims(image, axis=-1), 3, axis=-1)
     
+    # Ensure image is uint8 type for OpenCV operations
+    if input_image.dtype != np.uint8:
+        input_image = (input_image * 255).astype(np.uint8)
+    
     # Make predictions using model
     # Note: This is a simplified representation
     predictions = model.predict(np.expand_dims(input_image, axis=0))

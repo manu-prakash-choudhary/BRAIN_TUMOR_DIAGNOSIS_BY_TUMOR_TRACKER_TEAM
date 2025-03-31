@@ -6,6 +6,7 @@ from PIL import Image
 import io
 import matplotlib.pyplot as plt
 import time
+import glob
 
 from utils.preprocessing import preprocess_image
 from utils.feature_extraction import extract_features
@@ -35,12 +36,12 @@ models = initialize_models()
 st.title("🧠 BrainScanAI - Brain Tumor Detection System")
 st.markdown("""
 This application uses deep learning to detect and classify brain tumors from MRI images.
-Upload your MRI scan to get a comprehensive analysis.
+Upload your MRI scan or use our example images to get a comprehensive analysis.
 """)
 
 # Sidebar for navigation and settings
 st.sidebar.title("Navigation")
-page = st.sidebar.radio("Go to", ["Home", "Upload & Analyze", "About"])
+page = st.sidebar.radio("Go to", ["Home", "Upload & Analyze", "Example Images", "About"])
 
 if page == "Home":
     st.header("Welcome to BrainScanAI")
@@ -206,6 +207,176 @@ elif page == "Upload & Analyze":
                 
                 progress_bar.progress(100)
                 st.success("Analysis completed successfully!")
+
+elif page == "Example Images":
+    st.header("Example MRI Images")
+    
+    st.markdown("""
+    Use these example MRI images to test the system without having to upload your own files.
+    These are synthetic MRI scans generated for demonstration purposes.
+    """)
+    
+    # Get all example images
+    example_images = glob.glob("data/sample_images/*.jpg")
+    # Filter out modality directory images
+    example_images = [img for img in example_images if "modalities" not in img]
+    
+    if not example_images:
+        st.warning("No example images found. Please run the sample generator first.")
+    else:
+        # Group images by tumor type
+        tumor_types = ["glioma", "meningioma", "pituitary", "no_tumor"]
+        
+        for tumor_type in tumor_types:
+            st.subheader(f"{tumor_type.replace('_', ' ').title()} Examples")
+            
+            # Filter images for this tumor type
+            type_images = [img for img in example_images if tumor_type in os.path.basename(img).lower()]
+            
+            if type_images:
+                # Create columns for each image
+                columns = st.columns(len(type_images))
+                
+                for i, img_path in enumerate(type_images):
+                    with columns[i]:
+                        # Load and display image
+                        img = Image.open(img_path)
+                        st.image(img, caption=os.path.basename(img_path), use_column_width=True)
+                        
+                        # Add a button to analyze this image
+                        if st.button(f"Analyze {os.path.basename(img_path)}", key=f"analyze_{img_path}"):
+                            # Load the image
+                            img_array = np.array(img)
+                            
+                            # Run analysis with default options
+                            mri_modality = "T1-weighted"  # Default modality
+                            
+                            with st.spinner("Processing MRI scan..."):
+                                # Progress bar for visual feedback
+                                progress_bar = st.progress(0)
+                                
+                                # Preprocess image
+                                progress_bar.progress(10)
+                                st.info("Preprocessing image...")
+                                preprocessed_img = preprocess_image(img_array, mri_modality)
+                                time.sleep(0.5)  # Simulate processing time
+                                
+                                # Extract features
+                                progress_bar.progress(30)
+                                st.info("Extracting features...")
+                                features = extract_features(preprocessed_img, models['feature_extractor'])
+                                time.sleep(0.5)  # Simulate processing time
+                                
+                                # Results section
+                                st.subheader("Analysis Results")
+                                col1, col2 = st.columns(2)
+                                
+                                # Classification
+                                progress_bar.progress(50)
+                                st.info("Classifying tumor...")
+                                classification_result, class_probabilities = classify_tumor(
+                                    features, 
+                                    models['classifier']
+                                )
+                                time.sleep(0.5)  # Simulate processing time
+                                
+                                with col1:
+                                    st.markdown("### Tumor Classification")
+                                    st.markdown(f"**Detected tumor type:** {classification_result}")
+                                    
+                                    # Display probabilities
+                                    fig, ax = plt.figure(figsize=(10, 4)), plt.axes()
+                                    classes = ['Glioma', 'Meningioma', 'No Tumor', 'Pituitary']
+                                    colors = ['#FF9999', '#66B2FF', '#99FF99', '#FFCC99']
+                                    ax.bar(classes, class_probabilities, color=colors)
+                                    ax.set_ylabel('Probability')
+                                    ax.set_title('Tumor Classification Probabilities')
+                                    
+                                    st.pyplot(fig)
+                                
+                                # Object Detection
+                                progress_bar.progress(70)
+                                st.info("Detecting tumor location...")
+                                detection_result, detection_img = detect_tumor(
+                                    preprocessed_img, 
+                                    models['object_detector']
+                                )
+                                time.sleep(0.5)  # Simulate processing time
+                                
+                                with col2:
+                                    st.markdown("### Tumor Detection")
+                                    st.image(detection_img, caption="Tumor Detection Result", use_column_width=True)
+                                
+                                # GradCAM Visualization
+                                progress_bar.progress(85)
+                                st.info("Generating GradCAM visualization...")
+                                gradcam_img = generate_gradcam(
+                                    preprocessed_img,
+                                    models['classifier'],
+                                    class_idx=np.argmax(class_probabilities)
+                                )
+                                time.sleep(0.5)  # Simulate processing time
+                                
+                                st.subheader("GradCAM Visualization")
+                                st.image(gradcam_img, caption="GradCAM: Regions of Interest", use_column_width=True)
+                                
+                                # Diagnosis Report
+                                progress_bar.progress(95)
+                                st.info("Generating diagnosis report...")
+                                report = generate_report(
+                                    classification_result, 
+                                    class_probabilities,
+                                    mri_modality
+                                )
+                                time.sleep(0.5)  # Simulate processing time
+                                
+                                st.subheader("Diagnosis Report")
+                                st.markdown(report)
+                                
+                                progress_bar.progress(100)
+                                st.success("Analysis completed successfully!")
+            else:
+                st.info(f"No {tumor_type} example images found.")
+        
+        # Show modality examples if available
+        modality_dir = "data/sample_images/modalities"
+        if os.path.exists(modality_dir):
+            modality_images = glob.glob(f"{modality_dir}/*.jpg")
+            
+            if modality_images:
+                st.markdown("---")
+                st.subheader("MRI Modality Examples")
+                st.markdown("Different MRI modalities provide complementary information for diagnosis.")
+                
+                # Display all modalities of the same image
+                modality_cols = st.columns(len(modality_images))
+                
+                for i, img_path in enumerate(modality_images):
+                    modality_name = os.path.basename(img_path).split('_')[-1].split('.')[0]
+                    with modality_cols[i]:
+                        img = Image.open(img_path)
+                        st.image(img, caption=f"{modality_name} Modality", use_column_width=True)
+                        
+                        # Add a button to analyze this modality image
+                        if st.button(f"Analyze {modality_name}", key=f"analyze_mod_{img_path}"):
+                            # Similar analysis logic as above
+                            img_array = np.array(img)
+                            
+                            with st.spinner(f"Processing {modality_name} scan..."):
+                                # Abbreviated analysis for modality examples
+                                # (This could be expanded similar to the main analysis)
+                                preprocessed_img = preprocess_image(img_array, modality_name.replace('_', '-'))
+                                features = extract_features(preprocessed_img, models['feature_extractor'])
+                                classification_result, class_probabilities = classify_tumor(features, models['classifier'])
+                                
+                                st.subheader(f"{modality_name} Analysis Results")
+                                st.markdown(f"**Detected tumor type:** {classification_result}")
+                                
+                                # Display detection result
+                                _, detection_img = detect_tumor(preprocessed_img, models['object_detector'])
+                                st.image(detection_img, caption=f"Tumor Detection on {modality_name}", use_column_width=True)
+                                
+                                st.success(f"{modality_name} analysis completed!")
 
 elif page == "About":
     st.header("About BrainScanAI")

@@ -1,5 +1,4 @@
 import numpy as np
-import tensorflow as tf
 
 def classify_tumor(features, model):
     """
@@ -9,7 +8,7 @@ def classify_tumor(features, model):
     -----------
     features : numpy.ndarray
         Extracted features from MRI image
-    model : tf.keras.Model
+    model : object
         Classification model
         
     Returns:

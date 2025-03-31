@@ -1,4 +1,3 @@
-import tensorflow as tf
 import numpy as np
 import os
 
@@ -34,33 +33,17 @@ def load_feature_extraction_model():
     
     Returns:
     --------
-    tf.keras.Model
-        Feature extraction model
+    object
+        Feature extraction model (mock)
     """
-    # Create a simple CNN model for feature extraction simulation
-    # In a real application, this would load a pre-trained model like ResNet50
+    class MockFeatureExtractor:
+        def predict(self, image_batch):
+            # Simulate feature extraction (return random feature vector)
+            batch_size = 1 if len(image_batch.shape) == 3 else image_batch.shape[0]
+            # Return random features
+            return np.random.rand(batch_size, 512)
     
-    # Create a simple CNN for simulation
-    model = tf.keras.Sequential([
-        tf.keras.layers.Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(224, 224, 3)),
-        tf.keras.layers.MaxPooling2D((2, 2)),
-        tf.keras.layers.Conv2D(64, (3, 3), activation='relu', padding='same'),
-        tf.keras.layers.MaxPooling2D((2, 2)),
-        tf.keras.layers.Conv2D(128, (3, 3), activation='relu', padding='same'),
-        tf.keras.layers.MaxPooling2D((2, 2)),
-        tf.keras.layers.Conv2D(256, (3, 3), activation='relu', padding='same'),
-        tf.keras.layers.GlobalAveragePooling2D(),
-        tf.keras.layers.Dense(512, activation='relu')
-    ])
-    
-    # Compile the model
-    model.compile(
-        optimizer='adam',
-        loss='categorical_crossentropy',
-        metrics=['accuracy']
-    )
-    
-    return model
+    return MockFeatureExtractor()
 
 def load_classification_model():
     """
@@ -68,29 +51,32 @@ def load_classification_model():
     
     Returns:
     --------
-    tf.keras.Model
-        Classification model
+    object
+        Classification model (mock)
     """
-    # Create a simple classification model for simulation
-    # In a real application, this would load a pre-trained model
+    class MockClassifier:
+        def predict(self, feature_batch):
+            # Simulate classification (return probabilities for 4 classes)
+            batch_size = 1 if len(feature_batch.shape) == 1 else feature_batch.shape[0]
+            
+            # Predefined probabilities for demo purposes
+            # These will be more predictable than random ones
+            if np.random.random() < 0.25:
+                # Glioma prediction
+                probs = np.array([[0.85, 0.05, 0.05, 0.05]] * batch_size)
+            elif np.random.random() < 0.5:
+                # Meningioma prediction
+                probs = np.array([[0.05, 0.85, 0.05, 0.05]] * batch_size)
+            elif np.random.random() < 0.75:
+                # No tumor prediction
+                probs = np.array([[0.05, 0.05, 0.85, 0.05]] * batch_size)
+            else:
+                # Pituitary prediction
+                probs = np.array([[0.05, 0.05, 0.05, 0.85]] * batch_size)
+                
+            return probs
     
-    # Create a simple feedforward network
-    model = tf.keras.Sequential([
-        tf.keras.layers.Dense(256, activation='relu', input_shape=(512,)),
-        tf.keras.layers.Dropout(0.5),
-        tf.keras.layers.Dense(128, activation='relu'),
-        tf.keras.layers.Dropout(0.3),
-        tf.keras.layers.Dense(4, activation='softmax')  # 4 classes: glioma, meningioma, no tumor, pituitary
-    ])
-    
-    # Compile the model
-    model.compile(
-        optimizer='adam',
-        loss='categorical_crossentropy',
-        metrics=['accuracy']
-    )
-    
-    return model
+    return MockClassifier()
 
 def load_object_detection_model():
     """
@@ -120,95 +106,67 @@ def load_segmentation_model():
     
     Returns:
     --------
-    tf.keras.Model
-        Segmentation model
+    object
+        Segmentation model (mock)
     """
-    # Create a simplified U-Net like model for simulation
-    # In a real application, this would load a pre-trained U-Net or similar
+    class MockSegmentation:
+        def predict(self, image_batch):
+            # Simulate segmentation mask
+            batch_size = 1 if len(image_batch.shape) == 3 else image_batch.shape[0]
+            height, width = 224, 224
+            
+            # Create empty masks
+            masks = np.zeros((batch_size, height, width, 1))
+            
+            # Add simulated tumor regions
+            for i in range(batch_size):
+                # Random circle as tumor
+                center_x = np.random.randint(width//3, 2*width//3)
+                center_y = np.random.randint(height//3, 2*height//3)
+                radius = np.random.randint(10, 40)
+                
+                # Create mask
+                y, x = np.ogrid[:height, :width]
+                dist_from_center = np.sqrt((x - center_x)**2 + (y - center_y)**2)
+                mask = dist_from_center <= radius
+                masks[i, mask, 0] = 1
+            
+            return masks
     
-    # Input layer
-    inputs = tf.keras.layers.Input(shape=(224, 224, 3))
-    
-    # Encoder (downsampling path)
-    conv1 = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(inputs)
-    conv1 = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(conv1)
-    pool1 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))(conv1)
-    
-    conv2 = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(pool1)
-    conv2 = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(conv2)
-    pool2 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))(conv2)
-    
-    # Bridge
-    conv3 = tf.keras.layers.Conv2D(256, 3, activation='relu', padding='same')(pool2)
-    conv3 = tf.keras.layers.Conv2D(256, 3, activation='relu', padding='same')(conv3)
-    
-    # Decoder (upsampling path)
-    up1 = tf.keras.layers.UpSampling2D(size=(2, 2))(conv3)
-    concat1 = tf.keras.layers.concatenate([conv2, up1], axis=-1)
-    conv4 = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(concat1)
-    conv4 = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same')(conv4)
-    
-    up2 = tf.keras.layers.UpSampling2D(size=(2, 2))(conv4)
-    concat2 = tf.keras.layers.concatenate([conv1, up2], axis=-1)
-    conv5 = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(concat2)
-    conv5 = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same')(conv5)
-    
-    # Output layer
-    outputs = tf.keras.layers.Conv2D(1, 1, activation='sigmoid')(conv5)
-    
-    # Create model
-    model = tf.keras.Model(inputs=inputs, outputs=outputs)
-    
-    # Compile the model
-    model.compile(
-        optimizer='adam',
-        loss='binary_crossentropy',
-        metrics=['accuracy']
-    )
-    
-    return model
+    return MockSegmentation()
 
 def load_pretrained_weights(model, weights_path):
     """
-    Load pre-trained weights for a model
+    Mock function for loading weights
     
     Parameters:
     -----------
-    model : tf.keras.Model
-        Model to load weights into
+    model : object
+        Model object
     weights_path : str
         Path to weights file
         
     Returns:
     --------
-    tf.keras.Model
-        Model with loaded weights
+    object
+        Model (unchanged)
     """
-    try:
-        if os.path.exists(weights_path):
-            model.load_weights(weights_path)
-            print(f"Successfully loaded weights from {weights_path}")
-        else:
-            print(f"Weights file not found at {weights_path}")
-    except Exception as e:
-        print(f"Error loading weights: {str(e)}")
-    
+    # Just return the model, no actual loading
     return model
 
 def convert_model_for_inference(model):
     """
-    Convert model for optimized inference
+    Mock function for inference optimization
     
     Parameters:
     -----------
-    model : tf.keras.Model
+    model : object
         Model to convert
         
     Returns:
     --------
-    tf.keras.Model
-        Converted model
+    object
+        Model (unchanged)
     """
-    # In a real application, this would optimize the model for inference
-    # using techniques like pruning, quantization, etc.
+    # Just return the model, no actual conversion
     return model

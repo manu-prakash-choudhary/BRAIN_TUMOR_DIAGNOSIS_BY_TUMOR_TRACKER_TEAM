@@ -1,6 +1,5 @@
 import numpy as np
 import cv2
-import tensorflow as tf
 import matplotlib.pyplot as plt
 
 def detect_tumor(image, model, confidence_threshold=0.25):
@@ -11,8 +10,8 @@ def detect_tumor(image, model, confidence_threshold=0.25):
     -----------
     image : numpy.ndarray
         Preprocessed MRI image
-    model : tf.keras.Model or any object detection model
-        Object detection model (YOLO)
+    model : object
+        Object detection model
     confidence_threshold : float
         Confidence threshold for detections
         

@@ -1,5 +1,4 @@
 import numpy as np
-import tensorflow as tf
 
 def extract_features(preprocessed_image, model):
     """
@@ -9,8 +8,8 @@ def extract_features(preprocessed_image, model):
     -----------
     preprocessed_image : numpy.ndarray
         Preprocessed MRI image
-    model : tf.keras.Model
-        Pre-trained model for feature extraction
+    model : object
+        Model for feature extraction
         
     Returns:
     --------
@@ -36,10 +35,10 @@ def extract_deep_features(preprocessed_image, model, layer_name=None):
     -----------
     preprocessed_image : numpy.ndarray
         Preprocessed MRI image
-    model : tf.keras.Model
-        Pre-trained model for feature extraction
+    model : object
+        Model for feature extraction
     layer_name : str, optional
-        Name of the layer to extract features from
+        Name of the layer to extract features from (unused in mock implementation)
         
     Returns:
     --------
@@ -52,16 +51,9 @@ def extract_deep_features(preprocessed_image, model, layer_name=None):
     else:
         image_batch = preprocessed_image
     
-    # If layer name is provided, create a new model that outputs the specified layer
-    if layer_name:
-        feature_model = tf.keras.Model(
-            inputs=model.input,
-            outputs=model.get_layer(layer_name).output
-        )
-        features = feature_model.predict(image_batch)
-    else:
-        # Use the full model if no layer is specified
-        features = model.predict(image_batch)
+    # In this simplified implementation, we just return features from the model
+    # Ignoring the layer_name parameter since we're not using real TensorFlow models
+    features = model.predict(image_batch)
     
     return features
 

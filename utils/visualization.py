@@ -1,7 +1,6 @@
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-import tensorflow as tf
 import io
 from PIL import Image
 
@@ -13,60 +12,49 @@ def generate_gradcam(img, model, class_idx=None, layer_name=None):
     -----------
     img : numpy.ndarray
         Input image
-    model : tf.keras.Model
-        Trained model
+    model : object
+        Model object (mock implementation)
     class_idx : int, optional
         Class index to visualize, if None uses predicted class
     layer_name : str, optional
-        Name of the layer to use for Grad-CAM, if None uses the last convolutional layer
+        Name of the layer to use for Grad-CAM (unused in mock implementation)
         
     Returns:
     --------
     numpy.ndarray
-        Grad-CAM visualization
+        Simulated Grad-CAM visualization
     """
-    # Ensure image has batch dimension
+    # Ensure image has batch dimension and is in the right format
     if len(img.shape) == 3:
         img_tensor = np.expand_dims(img, axis=0)
     else:
         img_tensor = img
     
-    # Find the last convolutional layer if not specified
-    if layer_name is None:
-        for layer in reversed(model.layers):
-            if len(layer.output_shape) == 4:
-                layer_name = layer.name
-                break
+    # Set default class index if not provided
+    if class_idx is None:
+        class_idx = 0  # Default to first class
     
-    # Get the gradient model
-    grad_model = tf.keras.models.Model(
-        inputs=[model.inputs],
-        outputs=[model.get_layer(layer_name).output, model.output]
-    )
+    # Create a simple heatmap for visualization (random pattern)
+    height, width = img.shape[:2]
     
-    # Record operations for automatic differentiation
-    with tf.GradientTape() as tape:
-        conv_outputs, predictions = grad_model(img_tensor)
-        if class_idx is None:
-            class_idx = tf.argmax(predictions[0])
-        loss = predictions[:, class_idx]
+    # Generate a simulated heatmap with highest activation in center
+    y, x = np.ogrid[:height, :width]
+    center_y, center_x = height // 2, width // 2
     
-    # Gradient of the class output with respect to the feature map
-    grads = tape.gradient(loss, conv_outputs)
+    # Create a radial gradient with some noise
+    dist_from_center = np.sqrt((x - center_x)**2 + (y - center_y)**2)
+    max_dist = np.sqrt(center_x**2 + center_y**2)
     
-    # Vector of mean intensity of gradient over feature map 
-    pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
+    # Scale distance to [0,1] range and invert (closer to center = higher value)
+    heatmap = 1 - (dist_from_center / max_dist)
     
-    # Weight the feature maps with the gradient
-    conv_outputs = conv_outputs[0]
-    heatmap = tf.reduce_sum(tf.multiply(pooled_grads, conv_outputs), axis=-1)
-    
-    # Normalize heatmap
-    heatmap = tf.maximum(heatmap, 0) / tf.math.reduce_max(heatmap)
-    heatmap = heatmap.numpy()
+    # Add some randomness for realism
+    noise = np.random.rand(height, width) * 0.2
+    heatmap = heatmap + noise
+    heatmap = np.clip(heatmap, 0, 1)
     
     # Resize heatmap to match input image size
-    heatmap = cv2.resize(heatmap, (img.shape[1], img.shape[0]))
+    heatmap = cv2.resize(heatmap, (width, height))
     
     # Apply colormap to heatmap
     heatmap = np.uint8(255 * heatmap)

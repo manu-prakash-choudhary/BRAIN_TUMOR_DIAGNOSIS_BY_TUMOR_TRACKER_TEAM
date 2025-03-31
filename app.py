@@ -112,7 +112,7 @@ elif page == "Upload & Analyze":
     if uploaded_file is not None:
         # Display original image
         image = Image.open(uploaded_file)
-        st.image(image, caption="Uploaded MRI Scan", use_column_width=True)
+        st.image(image, caption="Uploaded MRI Scan", use_container_width=True)
         
         # Convert to numpy array for processing
         img_array = np.array(image)
@@ -175,7 +175,7 @@ elif page == "Upload & Analyze":
                     
                     with col2:
                         st.markdown("### Tumor Detection")
-                        st.image(detection_img, caption="Tumor Detection Result", use_column_width=True)
+                        st.image(detection_img, caption="Tumor Detection Result", use_container_width=True, clamp=True)
                 
                 # GradCAM Visualization
                 if generate_gradcam_vis and run_classification:
@@ -189,7 +189,7 @@ elif page == "Upload & Analyze":
                     time.sleep(0.5)  # Simulate processing time
                     
                     st.subheader("GradCAM Visualization")
-                    st.image(gradcam_img, caption="GradCAM: Regions of Interest", use_column_width=True)
+                    st.image(gradcam_img, caption="GradCAM: Regions of Interest", use_container_width=True, clamp=True)
                 
                 # Diagnosis Report
                 if generate_diagnosis and run_classification:
@@ -241,7 +241,7 @@ elif page == "Example Images":
                     with columns[i]:
                         # Load and display image
                         img = Image.open(img_path)
-                        st.image(img, caption=os.path.basename(img_path), use_column_width=True)
+                        st.image(img, caption=os.path.basename(img_path), use_container_width=True)
                         
                         # Add a button to analyze this image
                         if st.button(f"Analyze {os.path.basename(img_path)}", key=f"analyze_{img_path}"):

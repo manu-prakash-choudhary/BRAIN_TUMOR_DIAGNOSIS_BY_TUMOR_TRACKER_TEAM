@@ -1,0 +1,28 @@
+node_modules
+
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment
+.venv/
+env/
+venv/
+
+# VSCode / IDE
+.vscode/
+.idea/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Models & Data (optional if they’re large)
+*.h5
+*.pkl
+*.ckpt
+*.pt
+*.onnx

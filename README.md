@@ -341,7 +341,7 @@ Our multidisciplinary team combines artificial intelligence expertise with medic
 - Healthcare technology advisors
 
 ## 📞 Technical Support
-- 💬 GitHub Issues: [Report bugs or request features]([https://github.com/Bhanu8199/BRAIN_TUMOR_DIAGNOSIS_BY_TUMOR_TRACKER_TEAM/edit/main/README.md/issues])
+- 💬 GitHub Issues: [Report bugs or request features](https://github.com/Bhanu8199/BRAIN_TUMOR_DIAGNOSIS_BY_TUMOR_TRACKER_TEAM/edit/main/README.md/issues)
 
 
 ### Collaboration Opportunities
